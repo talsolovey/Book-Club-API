@@ -57,7 +57,7 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "Container up and running" >> Cloud-Assignment-3/log.txt
+          echo "Container up and running" >> log.txt
          else
           echo "Container failed to run" >> log.txt
         fi
