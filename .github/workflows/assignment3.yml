@@ -57,10 +57,13 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "Container up and running" >> log.txt
+          echo "Container up and running" >> Cloud-Assignment-3/log.txt
          else
           echo "Container failed to run" >> log.txt
         fi
+    - name: Print file path
+      run: |
+          echo "log file path: $(pwd)/log.txt"
     - name: Check containers are running
       run: docker ps
 #     2. set up python and pytest environment
@@ -129,17 +132,21 @@ jobs:
       run: cat mypath/results
     - name: run queries
       run: |
-        for query in $(cat query.txt); do
-          echo "query: $query" >> response.txt
-          echo response: $(curl --location --request GET "http://127.0.0.1:5001/books${query}") >> response.txt
-        done
+        while read line; do
+            response=$(curl --location --request GET "http://127.0.0.1:5001/books${line}")
+            echo "query: $line"
+            echo "response: $response"
+        done < query.txt
     - name: Upload response file
       uses: actions/upload-artifact@v3
       with:
         name: response
         path: response.txt
+    - name: Print file path
+      run: |
+          echo "log file path: $(pwd)/log.txt"
     - name: Upload log artifact
       uses: actions/upload-artifact@v3
       with: 
         name: log-file
-        path: log.txt
+        path: /home/runner/work/Cloud-Assignment-3/Cloud-Assignment-3/log.txt
