@@ -54,9 +54,9 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "Container up and running" >> ../log.txt
+          echo "Container up and running" >> log.txt
          else
-          echo "Container failed to run" >> ../log.txt
+          echo "Container failed to run" >> log.txt
         fi
     - name: Check containers are running
       run: docker ps
@@ -78,9 +78,9 @@ jobs:
     - name: Log test results
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "tests succeeded" >> ../log.txt
+          echo "tests succeeded" >> log.txt
         else
-          echo "tests failed" >> ../log.txt
+          echo "tests failed" >> log.txt
         fi
     - name: upload test results
       if: always()
@@ -128,7 +128,7 @@ jobs:
       run: |
         for query in $(cat query.txt); do
           echo "query: $query" >> response.txt
-          echo response: $(curl --location --request GET 'http://127.0.0.1:5001/books${query}') >> response.txt
+          echo response: $(curl --location --request GET "http://127.0.0.1:5001/books${query}") >> response.txt
         done
     - name: Upload response file
       uses: actions/upload-artifact@v3
@@ -136,7 +136,6 @@ jobs:
         name: response
         path: response.txt
     - name: Upload log artifact
-      if: always()
       uses: actions/upload-artifact@v3
       with: 
         name: log-file
