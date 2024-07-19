@@ -98,13 +98,23 @@ jobs:
       run: |
         cd tests
         pytest -v assn3_tests.py > assn3_test_results.txt
-    - name: Log test results
+    - name: Download log file artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: log-file
+    - shell: bash
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "TEST=tests succeeded" >> $GITHUB_ENV
+          echo "TEST=tests succeeded" >> log.txt
         else
-          echo "TEST=tests failed" >> $GITHUB_ENV
+          echo "TEST=tests failed" >> log.txt
         fi
+    - name: Upload log file artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: log-file
+        path: log.txt
+        overwrite: true
     - name: upload test results
       if: always()
       uses: actions/upload-artifact@v4
