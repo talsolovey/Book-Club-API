@@ -4,11 +4,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DATE: "$(date -Iminutes)"
-      NAME: "Tal Solovey"
-      
+    outputs:
+      DATE: ${{ steps.set_date.outputs.test }}
+      NAME: ${{ steps.set_name.outputs.test }}
+      BUILD: ${{ steps.build_result.outputs.test }}
     steps:
+    - id: set_date
+      run: echo $(date -Iminutes) >> "$GITHUB_OUTPUT"
+    - id: set_name
+      run: echo Tal Solovey >> "$GITHUB_OUTPUT"
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -24,12 +28,12 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          build_result="image successfuly built"
+          result="image successfuly built"
         else
-          build_result="image not able to be built"
+          result="image not able to be built"
         fi
-      env: 
-        BUILD: ${build_result}
+    - id: build_result
+      run: echo "$(result)" >> "$GITHUB_OUTPUT"
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -42,9 +46,9 @@ jobs:
     steps:
     - name: Create log file
       run: |
-        echo "${{ env.DATE }}" > log.txt
-        echo "${{ env.NAME }}" >> log.txt
-        echo "${{ env.BUILD }}" >> log.txt
+        echo ${{ needs.build.outputs.DATE}} > log.txt
+        echo ${{ needs.build.outputs.NAME}} > log.txt
+        echo ${{ needs.build.outputs.BUILD}} > log.txt
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
     - name: Load Docker images from previous workflows
@@ -134,7 +138,7 @@ jobs:
       run: |
         for query in $(cat query.txt); do
           echo "query: $query" >> response.txt
-          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/books${query}")
+          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/boos${query}")
           http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
           json_response=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
           if [ "$http_status" -ne 200 ]; then
