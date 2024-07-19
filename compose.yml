@@ -2,7 +2,7 @@ version: '3'
 
 services:
   book-service:
-    build: .vnjnjkn
+    build: .
     volumes:
       - ./book.py:/book.py
     environment:
