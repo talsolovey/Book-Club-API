@@ -1,2 +1,3 @@
 ?genre=Fiction
 ?publishedDate=2016-06-13
+?genre=F
