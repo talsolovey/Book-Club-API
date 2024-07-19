@@ -116,7 +116,7 @@ jobs:
           echo "tests failed" >> log.txt
         fi
     - name: Upload log file artifact
-      if: ${{ steps.run-container.outcome }} == 'success'
+      if: always() and ${{ steps.run-container.outcome }} == 'success'
       uses: actions/upload-artifact@v4
       with:
         name: log-file
