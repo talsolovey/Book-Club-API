@@ -105,9 +105,9 @@ jobs:
     - shell: bash
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "TEST=tests succeeded" >> log.txt
+          echo "tests succeeded" >> log.txt
         else
-          echo "TEST=tests failed" >> log.txt
+          echo "tests failed" >> log.txt
         fi
     - name: Upload log file artifact
       uses: actions/upload-artifact@v4
