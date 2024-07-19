@@ -5,12 +5,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      LOG_FILE: $GITHUB_WORKSPACE/log.txt
+      DATE: 
+      NAME: 
+      BUILD: 
     steps:
     - name: set date and name
       run: |
-        echo "$(date -Iminutes)" >> ${{ env.LOG_FILE }}
-        echo "Tal Solovey" >> ${{ env.LOG_FILE }}
+        echo "DATE=$(date -Iminutes)" >> $GITHUB_ENV
+        echo "NAME=Tal Solovey" >> $GITHUB_ENV
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -26,15 +28,20 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "image successfully built" >> ${{ env.LOG_FILE }}
+          echo "BUILD=image successfully built" >> $GITHUB_ENV
         else
-          echo "image not able to be built" >> ${{ env.LOG_FILE }}
+          echo "BUILD=image not able to be built" >> $GITHUB_ENV
         fi
+    - name: create log file
+      run: |
+        echo "${{ env.DATE }}" > log.txt
+        echo "${{ env.NAME }}" >> log.txt
+        echo "${{ env.BUILD }}" >> log.txt
     - name: Upload log file artifact
       uses: actions/upload-artifact@v4
       with:
         name: log-file
-        path: $GITHUB_WORKSPACE/log.txt
+        path: log.txt
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -43,11 +50,15 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
+    env:
+      LOG_FILE: log.txt
+      CONTAINER:
+      TEST:
     steps:
-    - name: Download artifacts from build job
+    - name: Download Docker image artifact
       uses: actions/download-artifact@v4
-    - name: check log
-      run: cat log-file
+      with:
+        name: booksvr
     - name: Load Docker images from previous workflows
       run: docker load --input booksvr/image.tar
     - name: check booksvr image is loaded
@@ -56,13 +67,18 @@ jobs:
     - name: Run docker-compose
       id: run-container
       run: docker compose up -d
-    - name: Log Docker container result
+    - name: Download log file artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: log-file
+    - shell: bash
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "CONTAINER=Container up and running" >> $GITHUB_ENV
+          echo "Container up and running" >> log.txt
         else
-          echo "CONTAINER=Container failed to run" >> $GITHUB_ENV
+          echo "Container failed to run" >> log.txt
         fi
+        cat log.txt
     - name: Check containers are running
       run: docker ps
     - name: Checkout
