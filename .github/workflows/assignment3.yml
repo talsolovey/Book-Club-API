@@ -4,17 +4,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      DATE: ${{ steps.set_date.outputs.DATE }}
-      NAME: ${{ steps.set_name.outputs.NAME }}
-      BUILD: ${{ steps.build_result.outputs.BUILD }}
     env:
-      build: "Not set"
+      DATE: 
+      NAME: 
+      BUILD: 
     steps:
-    - id: set_date
-      run: echo "DATE=$(date -Iminutes)" >> $GITHUB_OUTPUT
-    - id: set_name
-      run: echo "NAME=Tal Solovey" >> $GITHUB_OUTPUT
+    - name: set date and name
+      run: |
+        echo "DATE=$(date -Iminutes)" >> $GITHUB_ENV
+        echo "NAME=Tal Solovey" >> $GITHUB_ENV
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -30,12 +28,20 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "build=image successfully built" >> $GITHUB_ENV
+          echo "BUILD=image successfully built" >> $GITHUB_ENV
         else
-          echo "build=image not able to be built" >> $GITHUB_ENV
+          echo "BUILD=image not able to be built" >> $GITHUB_ENV
         fi
-    - id: build_result
-      run: echo "BUILD=${{ env.build }}" >> $GITHUB_OUTPUT
+    - name: create log file
+      run: |
+        echo "${{ env.DATE }}" > log.txt
+        echo "${{ env.NAME }}" >> log.txt
+        echo "${{ env.BUILD }}" >> log.txt
+    - name: Upload log file artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: log-file
+        path: log.txt
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -45,10 +51,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      container_status: "Not set"
-      test_results: "Not set"
+      CONTAINER:
+      TEST:
     steps:
-    - name: Download Docker image artifact
+    - name: Download artifacts from build job
       uses: actions/download-artifact@v4
     - name: Load Docker images from previous workflows
       run: docker load --input booksvr/image.tar
@@ -61,10 +67,15 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "container_status=Container up and running" >> $GITHUB_ENV
+          echo "container_status=Container up and running" >> log-file
         else
-          echo "container_status=Container failed to run" >> $GITHUB_ENV
+          echo "container_status=Container failed to run" >> log-file
         fi
+    - name: Upload log file artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: log-file
+        path: log.txt
     - name: Check containers are running
       run: docker ps
     - name: Checkout
@@ -83,28 +94,21 @@ jobs:
     - name: Log test results
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "test_results=tests succeeded" >> $GITHUB_ENV
+          echo "test_results=tests succeeded" >> log-file
         else
-          echo "test_results=tests failed" >> $GITHUB_ENV
+          echo "test_results=tests failed" >> log-file
         fi
-    - name: upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: GH_test_results
-        path: tests/assn3_test_results.txt
-    - name: Create log file
-      run: |
-        echo "${{ needs.build.outputs.DATE}}" > log.txt
-        echo "${{ needs.build.outputs.NAME}}" >> log.txt
-        echo "${{ needs.build.outputs.BUILD}}" >> log.txt
-        echo "${{ env.container_status }}" >> log.txt
-        echo "${{ env.test_results }}" >> log.txt
-    - name: upload log file artifact
+    - name: Upload log file artifact
       uses: actions/upload-artifact@v4
       with:
         name: log-file
         path: log.txt
+    - name: upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: tests/assn3_test_results.txt
   query:
     needs: test
     runs-on: ubuntu-latest
@@ -156,6 +160,6 @@ jobs:
     - name: Upload response file
       uses: actions/upload-artifact@v4
       with:
-        name: response.txt
+        name: response-results
         path: response.txt
 
