@@ -1,18 +1,17 @@
 name: assignment3
 on:
   push
+
+env:
+  LOG_FILE: log.txt
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      DATE: ${{ steps.set_date.outputs.status }}
-      NAME: ${{ steps.set_name.outputs.status }}
-      BUILD: ${{ steps.build_result.outputs.status }}
     steps:
-    - id: set_date
-      run: echo "status=$(date -Iminutes)" >> $GITHUB_OUTPUT
-    - id: set_name
-      run: echo "status=Tal Solovey" >> $GITHUB_OUTPUT
+    - name: set date
+      run: echo "$(date -Iminutes)" >> ${{ env.LOG_FILE }}
+    - name: set name
+      run: echo "Tal Solovey" >> ${{ env.LOG_FILE }}
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -28,12 +27,10 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          result="image successfuly built"
+          echo "image successfuly built" >> ${{ env.LOG_FILE }}
         else
-          result="image not able to be built"
+          echo "image not able to be built" >> ${{ env.LOG_FILE }}
         fi
-    - id: build_result
-      run: echo "status=$(result)" >> $GITHUB_OUTPUT
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -44,11 +41,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Create log file
-      run: |
-        echo ${{ needs.build.outputs.DATE}} > log.txt
-        echo ${{ needs.build.outputs.NAME}} >> log.txt
-        echo ${{ needs.build.outputs.BUILD}} >> log.txt
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
     - name: Load Docker images from previous workflows
@@ -62,9 +54,9 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "Container up and running" >> log.txt
+          echo "Container up and running" >> ${{ env.LOG_FILE }}
          else
-          echo "Container failed to run" >> log.txt
+          echo "Container failed to run" >> ${{ env.LOG_FILE }}
         fi
     - name: Check containers are running
       run: docker ps
@@ -84,9 +76,9 @@ jobs:
     - name: Log test results
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "tests succeeded" >> log.txt
+          echo "tests succeeded" >> ${{ env.LOG_FILE }}
         else
-          echo "tests failed" >> log.txt
+          echo "tests failed" >> ${{ env.LOG_FILE }}
         fi
     - name: upload test results
       if: always()
@@ -138,7 +130,7 @@ jobs:
       run: |
         for query in $(cat query.txt); do
           echo "query: $query" >> response.txt
-          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/boos${query}")
+          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/books${query}")
           http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
           json_response=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
           if [ "$http_status" -ne 200 ]; then
