@@ -4,15 +4,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DATE: "$(date -Iminutes)"
+      NAME: "Tal Solovey"
+      
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
-    - name: Set date and name
-      run: |
-        echo "DATE=$(date -Iminutes)" >> $GITHUB_ENV
-        echo "NAME=Tal Solovey" >> $GITHUB_ENV
     - name: Build and export
       id: build-image
       uses: docker/build-push-action@v3
@@ -24,10 +24,12 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "BUILD=image successfuly built" >> $GITHUB_ENV
+          build_result="image successfuly built"
         else
-          echo "BUILD=image not able to be built" >> $GITHUB_ENV
+          build_result="image not able to be built"
         fi
+      env: 
+        BUILD: ${build_result}
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -41,11 +43,8 @@ jobs:
     - name: Create log file
       run: |
         echo "${{ env.DATE }}" > log.txt
-        echo ${{ env.DATE }}
         echo "${{ env.NAME }}" >> log.txt
-        echo ${{ env.NAME }}
         echo "${{ env.BUILD }}" >> log.txt
-        echo ${{ env.BUILD }}
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
     - name: Load Docker images from previous workflows
