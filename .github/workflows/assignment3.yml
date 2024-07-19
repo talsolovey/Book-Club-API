@@ -67,9 +67,9 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "container_status=Container up and running" >> log-file
+          echo "Container up and running" >> log-file
         else
-          echo "container_status=Container failed to run" >> log-file
+          echo "Container failed to run" >> log-file
         fi
     - name: Upload log file artifact
       uses: actions/upload-artifact@v4
@@ -99,12 +99,6 @@ jobs:
         else
           echo "test_results=tests failed" >> log-file
         fi
-    - name: Upload log file artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: log-file
-        path: log-file
-        overwrite: true
     - name: upload test results
       if: always()
       uses: actions/upload-artifact@v4
