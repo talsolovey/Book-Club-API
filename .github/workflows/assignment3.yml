@@ -94,7 +94,7 @@ jobs:
         name: GH_test_results
         path: tests/assn3_test_results.txt
     - name: Create log file
-      run:
+      run: |
         echo "${{ needs.build.outputs.DATE}}" > log.txt
         echo "${{ needs.build.outputs.NAME}}" >> log.txt
         echo "${{ needs.build.outputs.BUILD}}" >> log.txt
