@@ -5,14 +5,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DATE: 
-      NAME: 
-      BUILD: 
+      LOG_FILE: $GITHUB_WORKSPACE/log.txt
     steps:
     - name: set date and name
       run: |
-        echo "DATE=$(date -Iminutes)" >> log.txt
-        echo "NAME=Tal Solovey" >> log.txt
+        echo "$(date -Iminutes)" >> ${{ env.LOG_FILE }}
+        echo "Tal Solovey" >> ${{ env.LOG_FILE }}
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -28,9 +26,9 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "BUILD=image successfully built" >> log.txt
+          echo "image successfully built" >> ${{ env.LOG_FILE }}
         else
-          echo "BUILD=image not able to be built" >> log.txt
+          echo "image not able to be built" >> ${{ env.LOG_FILE }}
         fi
     - name: Upload log file artifact
       uses: actions/upload-artifact@v4
@@ -46,11 +44,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
+      LOG_FILE: log.txt
       CONTAINER:
       TEST:
     steps:
     - name: Download artifacts from build job
       uses: actions/download-artifact@v4
+    - name: check log
+      run: cat log.txt
     - name: Load Docker images from previous workflows
       run: docker load --input booksvr/image.tar
     - name: check booksvr image is loaded
@@ -62,16 +63,10 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "Container up and running" >> log.txt
+          echo "CONTAINER=Container up and running" >> $GITHUB_ENV
         else
-          echo "Container failed to run" >> log.txt
+          echo "CONTAINER=Container failed to run" >> $GITHUB_ENV
         fi
-    - name: Upload log file artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: log-file2
-        path: log.txt
-        overwrite: true
     - name: Check containers are running
       run: docker ps
     - name: Checkout
@@ -90,9 +85,9 @@ jobs:
     - name: Log test results
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "test_results=tests succeeded" >> log-file
+          echo "TEST=tests succeeded" >> $GITHUB_ENV
         else
-          echo "test_results=tests failed" >> log-file
+          echo "TEST=tests failed" >> $GITHUB_ENV
         fi
     - name: upload test results
       if: always()
