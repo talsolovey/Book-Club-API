@@ -11,8 +11,14 @@ jobs:
     steps:
     - name: set date and name
       run: |
-        echo "DATE=$(date -Iminutes)" >> $GITHUB_ENV
-        echo "NAME=Tal Solovey" >> $GITHUB_ENV
+        echo "DATE=$(date -Iminutes)" >> log.txt
+        echo "NAME=Tal Solovey" >> log.txt
+    - name: Upload log file artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: log-file
+        path: log.txt
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -26,19 +32,20 @@ jobs:
         tags: booksvr:latest
         outputs: type=docker,dest=/tmp/image.tar
     - name: Log docker image build result
+      uses: actions/download-artifact@v4
+      if: always()
+      with:
+        name: log-file
+    - shell: bash
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "BUILD=image successfully built" >> $GITHUB_ENV
+          echo "image successfully built" >> log.txt
         else
-          echo "BUILD=image not able to be built" >> $GITHUB_ENV
+          echo "image not able to be built" >> log.txt
         fi
-    - name: create log file
-      run: |
-        echo "${{ env.DATE }}" > log.txt
-        echo "${{ env.NAME }}" >> log.txt
-        echo "${{ env.BUILD }}" >> log.txt
     - name: Upload log file artifact
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: log-file
         path: log.txt
@@ -50,10 +57,6 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
-    env:
-      LOG_FILE: log.txt
-      CONTAINER:
-      TEST:
     steps:
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
