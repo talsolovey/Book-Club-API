@@ -4,15 +4,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DATE: 
-      NAME: 
-      BUILD: 
     steps:
     - name: set date and name
       run: |
-        echo "DATE=$(date -Iminutes)" >> log.txt
-        echo "NAME=Tal Solovey" >> log.txt
+        echo "$(date -Iminutes)" >> log.txt
+        echo "Tal Solovey" >> log.txt
     - name: Upload log file artifact
       uses: actions/upload-artifact@v4
       if: always()
@@ -49,6 +45,7 @@ jobs:
       with:
         name: log-file
         path: log.txt
+        overwrite: true
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -68,8 +65,9 @@ jobs:
     - name: Run docker-compose
       id: run-container
       run: docker compose up -d
-    - name: Download log file artifact
+    - name: Log container status result
       uses: actions/download-artifact@v4
+      if: always()
       with:
         name: log-file
     - shell: bash
