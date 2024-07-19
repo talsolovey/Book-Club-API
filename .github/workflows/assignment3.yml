@@ -1,7 +1,6 @@
 name: assignment3
 on:
   push
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,7 +35,7 @@ jobs:
           echo "build=image not able to be built" >> $GITHUB_ENV
         fi
     - id: build_result
-      run: echo "test=${{ env.build }}"
+      run: echo "test=${{ env.build }}" >> "$GITHUB_OUTPUT"
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -96,11 +95,11 @@ jobs:
         path: tests/assn3_test_results.txt
     - name: Create log file
       run:
-        echo ${{ needs.build.outputs.DATE}} > log.txt
-        echo ${{ needs.build.outputs.NAME}} >> log.txt
-        echo ${{ needs.build.outputs.BUILD}} >> log.txt
-        echo ${{ env.container_status }} >> log.txt
-        echo ${{ env.test_results }} >> log.txt
+        echo "${{ needs.build.outputs.DATE}}'\n'" > log.txt
+        echo "${{ needs.build.outputs.NAME}}'\n'" >> log.txt
+        echo "${{ needs.build.outputs.BUILD}}'\n'" >> log.txt
+        echo "${{ env.container_status }}'\n'" >> log.txt
+        echo "${{ env.test_results }}'\n'" >> log.txt
     - name: upload log file artifact
       uses: actions/upload-artifact@v4
       with:
@@ -145,7 +144,7 @@ jobs:
       run: |
         for query in $(cat query.txt); do
           echo "query: $query" >> response.txt
-          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/boos${query}")
+          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/books${query}")
           http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
           json_response=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
           if [ "$http_status" -ne 200 ]; then
@@ -157,6 +156,6 @@ jobs:
     - name: Upload response file
       uses: actions/upload-artifact@v4
       with:
-        name: response
+        name: response.txt
         path: response.txt
 
