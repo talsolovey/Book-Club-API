@@ -2,16 +2,18 @@ name: assignment3
 on:
   push
 
-env:
-  LOG_FILE: log.txt
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      DATE: ${{ steps.set_date.outputs.test }}
+      NAME: ${{ steps.set_name.outputs.test }}
+      BUILD: ${{ steps.build_result.outputs.test }}
     steps:
-    - name: set date
-      run: echo "$(date -Iminutes)" >> ${{ env.LOG_FILE }}
-    - name: set name
-      run: echo "Tal Solovey" >> ${{ env.LOG_FILE }}
+    - id: set_date
+      run: echo "test=$(date -Iminutes)" >> "$GITHUB_OUTPUT"
+    - id: set_name
+      run: echo "test=Tal Solovey" >> "$GITHUB_OUTPUT"
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -27,20 +29,29 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "image successfuly built" >> ${{ env.LOG_FILE }}
+          result="image successfuly built"
         else
-          echo "image not able to be built" >> ${{ env.LOG_FILE }}
+          result="image not able to be built"
         fi
+    - id: build_result
+      run: echo "test=$(result)" >> "$GITHUB_OUTPUT"
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
         name: booksvr
         path: /tmp/image.tar
-
   test:
     needs: build
     runs-on: ubuntu-latest
+    env:
+      CONTAINER: "Not set"
+      TEST: "Not set"
     steps:
+    - name: Create log file
+      run: |
+        echo ${{ needs.build.outputs.DATE}} > $
+        echo ${{ needs.build.outputs.NAME}} >> log.txt
+        echo ${{ needs.build.outputs.BUILD}} >> log.txt
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
     - name: Load Docker images from previous workflows
@@ -54,10 +65,12 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "Container up and running" >> ${{ env.LOG_FILE }}
+          echo "container_status=Container up and running"
          else
-          echo "Container failed to run" >> ${{ env.LOG_FILE }}
+          echo "container_status=Container failed to run"
         fi
+      env:
+        CONTAINER: $(container_status)
     - name: Check containers are running
       run: docker ps
     - name: Checkout
@@ -76,16 +89,25 @@ jobs:
     - name: Log test results
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "tests succeeded" >> ${{ env.LOG_FILE }}
+          echo "test_results=tests succeeded"
         else
-          echo "tests failed" >> ${{ env.LOG_FILE }}
+          echo "test_results=tests failed"
         fi
+      env:
+        TEST: $(test_results)
     - name: upload test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: GH_test_results
         path: tests/assn3_test_results.txt
+    - name: Create log file
+      run:
+        echo ${{ needs.build.outputs.DATE}} > log.txt
+        echo ${{ needs.build.outputs.NAME}} >> log.txt
+        echo ${{ needs.build.outputs.BUILD}} >> log.txt
+        echo ${{ env.CONTAINER }} >> log.txt
+        echo ${{ env.TEST }} >> log.txt
     - name: upload log file artifact
       uses: actions/upload-artifact@v4
       with:
@@ -130,7 +152,7 @@ jobs:
       run: |
         for query in $(cat query.txt); do
           echo "query: $query" >> response.txt
-          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/books${query}")
+          response=$(curl --silent --write-out "HTTPSTATUS:%{http_code}" --location --request GET "http://127.0.0.1:5001/boos${query}")
           http_status=$(echo "$response" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
           json_response=$(echo "$response" | sed -e 's/HTTPSTATUS\:.*//g')
           if [ "$http_status" -ne 200 ]; then
