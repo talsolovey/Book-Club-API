@@ -76,6 +76,7 @@ jobs:
       with:
         name: log-file
         path: log-file
+        overwrite: true
     - name: Check containers are running
       run: docker ps
     - name: Checkout
@@ -103,6 +104,7 @@ jobs:
       with:
         name: log-file
         path: log-file
+        overwrite: true
     - name: upload test results
       if: always()
       uses: actions/upload-artifact@v4
