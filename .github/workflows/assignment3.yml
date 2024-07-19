@@ -67,11 +67,12 @@ jobs:
       id: run-container
       run: docker compose up -d
     - name: Log container status result
-      uses: actions/download-artifact@v4
       if: always()
+      uses: actions/download-artifact@v4
       with:
         name: log-file
     - shell: bash
+      if: always()
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
           echo "Container up and running" >> log.txt
@@ -80,6 +81,7 @@ jobs:
         fi
         cat log.txt
     - name: Upload log file artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: log-file
@@ -100,7 +102,7 @@ jobs:
       run: |
         cd tests
         pytest -v assn3_tests.py > assn3_test_results.txt
-    - name: Download log file artifact
+    - name: add test reults to log file
       uses: actions/download-artifact@v4
       with:
         name: log-file
