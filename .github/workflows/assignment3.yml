@@ -30,7 +30,7 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          echo "build=image successfuly built" >> $GITHUB_ENV
+          echo "build=image successfully built" >> $GITHUB_ENV
         else
           echo "build=image not able to be built" >> $GITHUB_ENV
         fi
