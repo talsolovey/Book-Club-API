@@ -123,7 +123,7 @@ jobs:
         path: log.txt
         overwrite: true
     - name: upload test results
-      if: always()
+      if: ${{ steps.run-container.outcome }} == 'success'
       uses: actions/upload-artifact@v4
       with:
         name: test-results
