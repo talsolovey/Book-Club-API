@@ -57,8 +57,6 @@ jobs:
     steps:
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
-      with:
-        name: booksvr
     - name: Load Docker images from previous workflows
       run: docker load --input booksvr/image.tar
     - name: check booksvr image is loaded
@@ -79,6 +77,12 @@ jobs:
           echo "Container failed to run" >> log.txt
         fi
         cat log.txt
+    - name: Upload log file artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: log-file
+        path: log.txt
+        overwrite: true
     - name: Check containers are running
       run: docker ps
     - name: Checkout
