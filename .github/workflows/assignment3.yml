@@ -75,7 +75,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: log-file
-        path: log.txt
+        path: log-file
     - name: Check containers are running
       run: docker ps
     - name: Checkout
@@ -102,7 +102,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: log-file
-        path: log.txt
+        path: log-file
     - name: upload test results
       if: always()
       uses: actions/upload-artifact@v4
