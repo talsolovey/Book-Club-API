@@ -10,9 +10,9 @@ jobs:
       BUILD: ${{ steps.build_result.outputs.test }}
     steps:
     - id: set_date
-      run: echo $(date -Iminutes) >> "$GITHUB_OUTPUT"
+      run: echo "$(date -Iminutes)" >> "$GITHUB_OUTPUT"
     - id: set_name
-      run: echo Tal Solovey >> "$GITHUB_OUTPUT"
+      run: echo "Tal Solovey" >> "$GITHUB_OUTPUT"
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
