@@ -112,7 +112,7 @@ jobs:
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ] && [ ${{ steps.run-container.outcome }} == 'success' ]; then
           echo "tests succeeded" >> log.txt
-        elif [ ${{ steps.run-container.outcome }} == 'success' ] and [ ${{ steps.run-tests.outcome }} != 'success' ]; then
+        elif [ ${{ steps.run-container.outcome }} == 'success' ] && [ ${{ steps.run-tests.outcome }} != 'success' ]; then
           echo "tests failed" >> log.txt
         elif [ ${{ steps.run-container.outcome }} != 'success' ]; then
           echo "" >> log.txt
