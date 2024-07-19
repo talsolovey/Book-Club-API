@@ -114,7 +114,7 @@ jobs:
           echo "tests succeeded" >> log.txt
         elif [ ${{ steps.run-container.outcome }} == 'success' ] and [ ${{ steps.run-tests.outcome }} != 'success' ]; then
           echo "tests failed" >> log.txt
-        else if [ ${{ steps.run-container.outcome }} != 'success' ]; then
+        elif [ ${{ steps.run-container.outcome }} != 'success' ]; then
           echo "" >> log.txt
         fi
     - name: Upload log file artifact
