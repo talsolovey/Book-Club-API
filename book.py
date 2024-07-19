@@ -66,7 +66,7 @@ def post_book():
     ratingscoll.insert_one({'_id': result.inserted_id, 'values': [], 'average': 0.0, 'title': book_title})
     
     print(f"Inserted {book_title} into mongo with ID {str(result.inserted_id)}")
-    return {"ID": str(result.inserted_id)}, 200
+    return {"ID": str(result.inserted_id)}, 201
 
 # GET returns all the books in the collection in json that match the requested query string
 @app.route('/books', methods=['GET'])

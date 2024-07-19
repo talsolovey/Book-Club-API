@@ -103,10 +103,12 @@ jobs:
         cd tests
         pytest -v assn3_tests.py > assn3_test_results.txt
     - name: add test reults to log file
+      if: always()
       uses: actions/download-artifact@v4
       with:
         name: log-file
     - shell: bash
+      if: always()
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
           echo "tests succeeded" >> log.txt
@@ -114,6 +116,7 @@ jobs:
           echo "tests failed" >> log.txt
         fi
     - name: Upload log file artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: log-file
