@@ -9,6 +9,8 @@ jobs:
       DATE: ${{ steps.set_date.outputs.test }}
       NAME: ${{ steps.set_name.outputs.test }}
       BUILD: ${{ steps.build_result.outputs.test }}
+    env:
+      build: "Not set"
     steps:
     - id: set_date
       run: echo "test=$(date -Iminutes)" >> "$GITHUB_OUTPUT"
@@ -29,12 +31,12 @@ jobs:
     - name: Log docker image build result
       run: |
         if [ ${{ steps.build-image.outcome }} == 'success' ]; then
-          result="image successfuly built"
+          echo "build=image successfuly built" >> $GITHUB_ENV
         else
-          result="image not able to be built"
+          echo "build=image not able to be built" >> $GITHUB_ENV
         fi
     - id: build_result
-      run: echo "test=$(result)" >> "$GITHUB_OUTPUT"
+      run: echo "test=${{ env.build }}"
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -44,14 +46,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      CONTAINER: "Not set"
-      TEST: "Not set"
+      container_status: "Not set"
+      test_results: "Not set"
     steps:
-    - name: Create log file
-      run: |
-        echo ${{ needs.build.outputs.DATE}} > $
-        echo ${{ needs.build.outputs.NAME}} >> log.txt
-        echo ${{ needs.build.outputs.BUILD}} >> log.txt
     - name: Download Docker image artifact
       uses: actions/download-artifact@v4
     - name: Load Docker images from previous workflows
@@ -65,12 +62,10 @@ jobs:
     - name: Log Docker container result
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
-          echo "container_status=Container up and running"
+          echo "container_status=Container up and running" >> $GITHUB_ENV
          else
-          echo "container_status=Container failed to run"
+          echo "container_status=Container failed to run" >> $GITHUB_ENV
         fi
-      env:
-        CONTAINER: $(container_status)
     - name: Check containers are running
       run: docker ps
     - name: Checkout
@@ -89,12 +84,10 @@ jobs:
     - name: Log test results
       run: |
         if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
-          echo "test_results=tests succeeded"
+          echo "test_results=tests succeeded" >> $GITHUB_ENV
         else
-          echo "test_results=tests failed"
+          echo "test_results=tests failed" >> $GITHUB_ENV
         fi
-      env:
-        TEST: $(test_results)
     - name: upload test results
       if: always()
       uses: actions/upload-artifact@v4
@@ -106,8 +99,8 @@ jobs:
         echo ${{ needs.build.outputs.DATE}} > log.txt
         echo ${{ needs.build.outputs.NAME}} >> log.txt
         echo ${{ needs.build.outputs.BUILD}} >> log.txt
-        echo ${{ env.CONTAINER }} >> log.txt
-        echo ${{ env.TEST }} >> log.txt
+        echo ${{ env.container_status }} >> log.txt
+        echo ${{ env.test_results }} >> log.txt
     - name: upload log file artifact
       uses: actions/upload-artifact@v4
       with:
