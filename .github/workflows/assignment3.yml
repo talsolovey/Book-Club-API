@@ -110,10 +110,12 @@ jobs:
     - shell: bash
       if: always()
       run: |
-        if [ ${{ steps.run-tests.outcome }} == 'success' ]; then
+        if [ ${{ steps.run-tests.outcome }} == 'success' ] and [ ${{ steps.run-container.outcome }} == 'success' ]; then
           echo "tests succeeded" >> log.txt
-        else
+        else if [ ${{ steps.run-container.outcome }} == 'success' ] and [ ${{ steps.run-tests.outcome }} != 'success' ]; then
           echo "tests failed" >> log.txt
+        else if [ ${{ steps.run-container.outcome }} != 'success' ]; then
+          break
         fi
     - name: Upload log file artifact
       if: always()
