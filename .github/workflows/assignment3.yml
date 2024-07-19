@@ -5,16 +5,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      DATE: ${{ steps.set_date.outputs.test }}
-      NAME: ${{ steps.set_name.outputs.test }}
-      BUILD: ${{ steps.build_result.outputs.test }}
+      DATE: ${{ steps.set_date.outputs.DATE }}
+      NAME: ${{ steps.set_name.outputs.NAME }}
+      BUILD: ${{ steps.build_result.outputs.BUILD }}
     env:
       build: "Not set"
     steps:
     - id: set_date
-      run: echo "test=$(date -Iminutes)" >> "$GITHUB_OUTPUT"
+      run: echo "DATE=$(date -Iminutes)" >> $GITHUB_OUTPUT
     - id: set_name
-      run: echo "test=Tal Solovey" >> "$GITHUB_OUTPUT"
+      run: echo "NAME=Tal Solovey" >> $GITHUB_OUTPUT
     - name: Checkout
       uses: actions/checkout@v3
     - name: Set up Docker Buildx
@@ -35,7 +35,7 @@ jobs:
           echo "build=image not able to be built" >> $GITHUB_ENV
         fi
     - id: build_result
-      run: echo "test=${{ env.build }}" >> "$GITHUB_OUTPUT"
+      run: echo "BUILD=${{ env.build }}" >> $GITHUB_OUTPUT
     - name: Upload Docker image artifact
       uses: actions/upload-artifact@v4
       with:
@@ -62,7 +62,7 @@ jobs:
       run: |
         if [ ${{ steps.run-container.outcome }} == 'success' ]; then
           echo "container_status=Container up and running" >> $GITHUB_ENV
-         else
+        else
           echo "container_status=Container failed to run" >> $GITHUB_ENV
         fi
     - name: Check containers are running
@@ -95,11 +95,11 @@ jobs:
         path: tests/assn3_test_results.txt
     - name: Create log file
       run:
-        echo "${{ needs.build.outputs.DATE}}'\n'" > log.txt
-        echo "${{ needs.build.outputs.NAME}}'\n'" >> log.txt
-        echo "${{ needs.build.outputs.BUILD}}'\n'" >> log.txt
-        echo "${{ env.container_status }}'\n'" >> log.txt
-        echo "${{ env.test_results }}'\n'" >> log.txt
+        echo "${{ needs.build.outputs.DATE}}" > log.txt
+        echo "${{ needs.build.outputs.NAME}}" >> log.txt
+        echo "${{ needs.build.outputs.BUILD}}" >> log.txt
+        echo "${{ env.container_status }}" >> log.txt
+        echo "${{ env.test_results }}" >> log.txt
     - name: upload log file artifact
       uses: actions/upload-artifact@v4
       with:
